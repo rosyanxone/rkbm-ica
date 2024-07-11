@@ -79,10 +79,10 @@ function generateExcel(datas) {
   });
 
   try {
-    workbook.xlsx.writeFile(`${path}/rkbm.xlsx`).then(function () {
-      console.log("Data Successfully Generated.");
-      return "Data Successfully Generated.";
-    });
+    // workbook.xlsx.writeFile(`${path}/rkbm.xlsx`).then(function () {
+    //   console.log("Data Successfully Generated.");
+    // });
+    return "Data Successfully Generated.";
   } catch (error) {
     console.log(error);
     return error;
