@@ -1,3 +1,5 @@
 /output
 /node_modules
 /hostapp.txt
+/tmp
+/package-lock.json
