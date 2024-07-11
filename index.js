@@ -17,104 +17,19 @@ app.post("/extract-text", (req, res) => {
   const rkbms = [];
   const rkbmPdf = req.files.pdfFile;
 
-  // console.log(rkbmPdf);
-
   for (let i = 0; i < rkbmPdf.length; i++) {
     pdfParse(rkbmPdf[i])
-      .then((result) => {
-        console.log(rkbmPdf[i].name);
-        // console.log(result);
-
-        const pdfSplit = result.text.split(" ");
-
-        // Kapal RKBM
-        const point1 = [];
-
-        const point1From = pdfSplit.indexOf(
-          pdfSplit.filter((str) => str.includes("Kapal:"))[0]
-        );
-        const point1To = pdfSplit.indexOf(
-          pdfSplit.filter((str) => str.includes("2.DWT"))[0]
-        );
-
-        for (let m = point1From; m <= point1To; m++) {
-          point1.push(pdfSplit[m]);
-        }
-
-        // NAMA KAPAL RESULT
-        const kapalRKBM = point1
-          .join(" ")
-          .replace("Kapal:", "")
-          .replace("\n2.DWT", "");
-
-        // Nomor RKBM
-        // NOMOR RESULT
-        const nomorRKBM = parseInt(pdfSplit[0].split(".")[3]);
-
-        // Agen Kapal RKBM
-        const point4 = [];
-
-        const point4From = pdfSplit.indexOf(
-          pdfSplit.filter((str) => str.includes("Laut/Agen:"))[0]
-        );
-        const point4To = pdfSplit.indexOf(
-          pdfSplit.filter((str) => str.includes("5.Tiba"))[0]
-        );
-        for (let j = point4From; j <= point4To; j++) {
-          point4.push(pdfSplit[j]);
-        }
-
-        // AGEN RESULT
-        const agenRKBM = point4
-          .join(" ")
-          .replace("Laut/Agen:", "")
-          .replace("\n5.Tiba", "");
-
-        // Muatan RKBM
-        const point5 = [];
-
-        let point5From = pdfSplit.indexOf(
-          pdfSplit.filter((str) => str.includes("10.Rencana"))[0]
-        );
-        let point5To = pdfSplit.indexOf(
-          pdfSplit.filter((str) => str.includes("11."))[0]
-        );
-
-        for (let k = point5From; k <= point5To; k++) {
-          if (pdfSplit[k].includes("/") && pdfSplit[k + 2].includes("/")) {
-            point5.push(pdfSplit[k + 1]);
-          }
-        }
-
-        if (!point5.length > 0) {
-          point5From = pdfSplit.indexOf(
-            pdfSplit.filter((str) => str.includes("9.Rencana"))[0]
-          );
-          point5To = pdfSplit.indexOf(
-            pdfSplit.filter((str) => str.includes("10.Rencana"))[0]
-          );
-
-          for (let l = point5From; l <= point5To; l++) {
-            if (pdfSplit[l].includes("/") && pdfSplit[l + 2].includes("/")) {
-              point5.push(pdfSplit[l + 1]);
-            }
-          }
-        }
-        // MUATAN RESULT
-        const muatanRKBM = parseInt(point5.join(" ").replace(",", ""));
-
-        return { no: nomorRKBM, ship: kapalRKBM, agent: agenRKBM, ammount: muatanRKBM };
-      })
-      .then((datas) => {
-        // console.log("RKBM Data: " + JSON.stringify(datas));
-
-        // Append To Array
-        rkbms.push(datas);
+      .then((parsedPdf) => generateRkbm(parsedPdf))
+      .then((rkbmResult) => {
+        console.log("RKBM Data: " + JSON.stringify(rkbmResult));
+        rkbms.push(rkbmResult);
       });
   }
 
+  // Generating Excel
   setTimeout(() => {
-    generateExcel(rkbms);
+    rkbms.sort((a, b) => a.no - b.no);
+    generateExcel(rkbms, res);
   }, 1000);
 });
 
@@ -123,7 +38,7 @@ app.listen(3000);
 function generateExcel(datas) {
   const workbook = new excelJS.Workbook();
   const worksheet = workbook.addWorksheet("RKBM");
-  const path = "./output";
+  const path = "./output/rkbm.xlsx";
 
   worksheet.columns = [
     { header: "Nomor", key: "no", width: 10 },
@@ -149,13 +64,105 @@ function generateExcel(datas) {
       };
     });
   }
+
   worksheet.getRow(1).eachCell((cell) => {
     cell.font = { bold: true };
   });
 
   try {
-    workbook.xlsx.writeFile(`${path}/rkbm.xlsx`);
+    workbook.xlsx.writeFile(path)
+      .then(function () {
+        console.log("Don........");
+      });
   } catch (error) {
     console.log(error);
   }
+}
+
+function generateRkbm(result) {
+  const pdfSplit = result.text.split(" ");
+
+  // Kapal RKBM
+  const point1 = [];
+
+  const point1From = pdfSplit.indexOf(
+    pdfSplit.filter((str) => str.includes("Kapal:"))[0]
+  );
+  const point1To = pdfSplit.indexOf(
+    pdfSplit.filter((str) => str.includes("2.DWT"))[0]
+  );
+
+  for (let m = point1From; m <= point1To; m++) {
+    point1.push(pdfSplit[m]);
+  }
+
+  // NAMA KAPAL RESULT
+  const kapalRKBM = point1
+    .join(" ")
+    .replace("Kapal:", "")
+    .replace("\n2.DWT", "");
+
+  // Nomor RKBM
+  // NOMOR RESULT
+  const nomorRKBM = parseInt(pdfSplit[0].split(".")[3]);
+
+  // Agen Kapal RKBM
+  const point4 = [];
+
+  const point4From = pdfSplit.indexOf(
+    pdfSplit.filter((str) => str.includes("Laut/Agen:"))[0]
+  );
+  const point4To = pdfSplit.indexOf(
+    pdfSplit.filter((str) => str.includes("5.Tiba"))[0]
+  );
+  for (let j = point4From; j <= point4To; j++) {
+    point4.push(pdfSplit[j]);
+  }
+
+  // AGEN RESULT
+  const agenRKBM = point4
+    .join(" ")
+    .replace("Laut/Agen:", "")
+    .replace("\n5.Tiba", "");
+
+  // Muatan RKBM
+  const point5 = [];
+
+  let point5From = pdfSplit.indexOf(
+    pdfSplit.filter((str) => str.includes("10.Rencana"))[0]
+  );
+  let point5To = pdfSplit.indexOf(
+    pdfSplit.filter((str) => str.includes("11."))[0]
+  );
+
+  for (let k = point5From; k <= point5To; k++) {
+    if (pdfSplit[k].includes("/") && pdfSplit[k + 2].includes("/")) {
+      point5.push(pdfSplit[k + 1]);
+    }
+  }
+
+  if (!point5.length > 0) {
+    point5From = pdfSplit.indexOf(
+      pdfSplit.filter((str) => str.includes("9.Rencana"))[0]
+    );
+    point5To = pdfSplit.indexOf(
+      pdfSplit.filter((str) => str.includes("10.Rencana"))[0]
+    );
+
+    for (let l = point5From; l <= point5To; l++) {
+      if (pdfSplit[l].includes("/") && pdfSplit[l + 2].includes("/")) {
+        point5.push(pdfSplit[l + 1]);
+      }
+    }
+  }
+
+  // MUATAN RESULT
+  const muatanRKBM = parseInt(point5.join(" ").replace(",", ""));
+
+  return {
+    no: nomorRKBM,
+    ship: kapalRKBM,
+    agent: agenRKBM,
+    ammount: muatanRKBM,
+  };
 }

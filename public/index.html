@@ -18,11 +18,10 @@
         btnUpload.addEventListener("click", () => {
             const formData = new FormData();
 
-            console.log("Hello");
+            console.log(inpFile.files);
             for (let x = 0; x < inpFile.files.length; x++) {
                 formData.append("pdfFile", inpFile.files[x]);
             }
-            console.log(inpFile.files);
 
             fetch("/extract-text", {
                 method: "post",
