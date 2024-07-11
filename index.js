@@ -37,7 +37,10 @@ app.post("/extract", (req, res) => {
   }, 1000);
 });
 
-app.listen(3000);
+// Listen
+const port = process.env.PORT || 3000;
+app.listen(port);
+console.log('Listening on port: '+ port);
 
 function generateExcel(datas) {
   const workbook = new excelJS.Workbook();
