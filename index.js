@@ -47,7 +47,7 @@ console.log("Listening on port: " + port);
 function generateExcel(datas) {
   const workbook = new excelJS.Workbook();
   const worksheet = workbook.addWorksheet("RKBM");
-  const path = "./output";
+  const path =  process.env.PATH || "./output";
 
   worksheet.columns = [
     { header: "Nomor", key: "no", width: 10 },
@@ -79,10 +79,10 @@ function generateExcel(datas) {
   });
 
   try {
-    // workbook.xlsx.writeFile(`${path}/rkbm.xlsx`).then(function () {
-    //   console.log("Data Successfully Generated.");
-    // });
-    return "Data Successfully Generated.";
+    workbook.xlsx.writeFile(`${path}/rkbm.xlsx`).then(function () {
+      console.log("Data Successfully Generated.");
+      return "Data Successfully Generated.";
+    });
   } catch (error) {
     console.log(error);
     return error;
