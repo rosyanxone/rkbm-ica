@@ -33,14 +33,18 @@ app.post("/extract", (req, res) => {
   // Generating Excel
   setTimeout(() => {
     rkbms.sort((a, b) => a.no - b.no);
-    generateExcel(rkbms);
+    try {
+      generateExcel(rkbms);
+    } catch (e) {
+      return e;
+    }
   }, 1000);
 });
 
 // Listen
 const port = process.env.PORT || 3000;
 app.listen(port);
-console.log('Listening on port: '+ port);
+console.log("Listening on port: " + port);
 
 function generateExcel(datas) {
   const workbook = new excelJS.Workbook();

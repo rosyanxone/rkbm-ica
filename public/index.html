@@ -29,6 +29,8 @@
         fetch("/extract", {
           method: "post",
           body: formData,
+        }).then((response) => {
+          console.log(response);
         });
 
         const downloadBtn = download.querySelector("a");
