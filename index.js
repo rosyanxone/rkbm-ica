@@ -8,7 +8,11 @@ const app = express();
 app.use("/", express.static("public"));
 app.use(fileUpload());
 
-app.post("/extract-text", (req, res) => {
+app.get("/download", function (req, res) {
+  res.download("./output/rkbm.xlsx");
+});
+
+app.post("/extract", (req, res) => {
   if (!req.files && !req.files.pdfFile) {
     res.status(400);
     res.end();
@@ -29,7 +33,7 @@ app.post("/extract-text", (req, res) => {
   // Generating Excel
   setTimeout(() => {
     rkbms.sort((a, b) => a.no - b.no);
-    generateExcel(rkbms, res);
+    generateExcel(rkbms);
   }, 1000);
 });
 
@@ -38,7 +42,7 @@ app.listen(3000);
 function generateExcel(datas) {
   const workbook = new excelJS.Workbook();
   const worksheet = workbook.addWorksheet("RKBM");
-  const path = "./output/rkbm.xlsx";
+  const path = "./output";
 
   worksheet.columns = [
     { header: "Nomor", key: "no", width: 10 },
@@ -70,10 +74,9 @@ function generateExcel(datas) {
   });
 
   try {
-    workbook.xlsx.writeFile(path)
-      .then(function () {
-        console.log("Don........");
-      });
+    workbook.xlsx.writeFile(`${path}/rkbm.xlsx`).then(function () {
+      console.log("Data Successfully Generated.");
+    });
   } catch (error) {
     console.log(error);
   }

@@ -1,35 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <input type="file" id="inpFile" multiple>
-    <button type="button" id="btnUpload">Upload</button>
-    <br>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RKBM PDF Generator</title>
+  </head>
+  <body>
+    <input type="file" id="inpFile" multiple />
+    <div id="download" style="display: inline-block; cursor: not-allowed; ">
+        <a href="/download" style="pointer-events: none;">
+            Download
+        </a>
+    </div>
+
     <script>
-        const inpFile = document.getElementById("inpFile");
-        const btnUpload = document.getElementById("btnUpload");
-        const resultText = document.getElementById("resultText");
+      const inpFile = document.getElementById("inpFile");
+      const download = document.getElementById("download");
 
-        btnUpload.addEventListener("click", () => {
-            const formData = new FormData();
+      inpFile.addEventListener("change", () => {
+        const formData = new FormData();
 
-            console.log(inpFile.files);
-            for (let x = 0; x < inpFile.files.length; x++) {
-                formData.append("pdfFile", inpFile.files[x]);
-            }
+        console.log(inpFile.files);
+        for (let x = 0; x < inpFile.files.length; x++) {
+          formData.append("pdfFile", inpFile.files[x]);
+        }
 
-            fetch("/extract-text", {
-                method: "post",
-                body: formData
-            }).then(response => {
-                return response.text();
-            });
+        fetch("/extract", {
+          method: "post",
+          body: formData,
         });
+
+        const downloadBtn = download.querySelector("a");
+        download.style.cursor = "pointer";
+        downloadBtn.style.pointerEvents = "unset";
+      });
     </script>
-</body>
+  </body>
 </html>
