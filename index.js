@@ -33,11 +33,9 @@ app.post("/extract", (req, res) => {
   // Generating Excel
   setTimeout(() => {
     rkbms.sort((a, b) => a.no - b.no);
-    try {
-      generateExcel(rkbms);
-    } catch (e) {
-      return e;
-    }
+    
+    const result = generateExcel(rkbms);
+    return result;
   }, 1000);
 });
 
@@ -83,9 +81,11 @@ function generateExcel(datas) {
   try {
     workbook.xlsx.writeFile(`${path}/rkbm.xlsx`).then(function () {
       console.log("Data Successfully Generated.");
+      return "Data Successfully Generated.";
     });
   } catch (error) {
     console.log(error);
+    return error;
   }
 }
 
