@@ -21,6 +21,8 @@ app.post("/extract", (req, res) => {
   const rkbms = [];
   const rkbmPdf = req.files.pdfFile;
 
+  return "My path: " + path;
+
   for (let i = 0; i < rkbmPdf.length; i++) {
     pdfParse(rkbmPdf[i])
       .then((parsedPdf) => generateRkbm(parsedPdf))
@@ -41,13 +43,13 @@ app.post("/extract", (req, res) => {
 
 // Listen
 const port = process.env.PORT || 3000;
+const path =  process.env.PATH || "./output";
 app.listen(port);
 console.log("Listening on port: " + port);
 
 function generateExcel(datas) {
   // const workbook = new excelJS.Workbook();
   // const worksheet = workbook.addWorksheet("RKBM");
-  // const path =  process.env.PATH || "./output";
 
   // worksheet.columns = [
   //   { header: "Nomor", key: "no", width: 10 },
