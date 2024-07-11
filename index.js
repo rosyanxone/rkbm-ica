@@ -45,44 +45,44 @@ app.listen(port);
 console.log("Listening on port: " + port);
 
 function generateExcel(datas) {
-  const workbook = new excelJS.Workbook();
-  const worksheet = workbook.addWorksheet("RKBM");
-  const path =  process.env.PATH || "./output";
+  // const workbook = new excelJS.Workbook();
+  // const worksheet = workbook.addWorksheet("RKBM");
+  // const path =  process.env.PATH || "./output";
 
-  worksheet.columns = [
-    { header: "Nomor", key: "no", width: 10 },
-    { header: "Nama Kapal", key: "ship", width: 25 },
-    { header: "Agen Kapal", key: "agent", width: 45 },
-    { header: "Muatan", key: "ammount", width: 10 },
-  ];
+  // worksheet.columns = [
+  //   { header: "Nomor", key: "no", width: 10 },
+  //   { header: "Nama Kapal", key: "ship", width: 25 },
+  //   { header: "Agen Kapal", key: "agent", width: 45 },
+  //   { header: "Muatan", key: "ammount", width: 10 },
+  // ];
 
-  let counter = 1;
-  datas.forEach((data) => {
-    worksheet.addRow(data);
-    counter++;
-  });
+  // let counter = 1;
+  // datas.forEach((data) => {
+  //   worksheet.addRow(data);
+  //   counter++;
+  // });
 
-  let list = ["A", "B", "C", "D"];
-  for (let i = 0; i <= counter; i++) {
-    list.forEach((item) => {
-      worksheet.getCell(item + i).border = {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        bottom: { style: "thin" },
-        right: { style: "thin" },
-      };
-    });
-  }
+  // let list = ["A", "B", "C", "D"];
+  // for (let i = 0; i <= counter; i++) {
+  //   list.forEach((item) => {
+  //     worksheet.getCell(item + i).border = {
+  //       top: { style: "thin" },
+  //       left: { style: "thin" },
+  //       bottom: { style: "thin" },
+  //       right: { style: "thin" },
+  //     };
+  //   });
+  // }
 
-  worksheet.getRow(1).eachCell((cell) => {
-    cell.font = { bold: true };
-  });
+  // worksheet.getRow(1).eachCell((cell) => {
+  //   cell.font = { bold: true };
+  // });
 
   try {
-    workbook.xlsx.writeFile(`${path}/rkbm.xlsx`).then(function () {
-      console.log("Data Successfully Generated.");
-      return "Data Successfully Generated.";
-    });
+    // workbook.xlsx.writeFile(`${path}/rkbm.xlsx`).then(function () {
+    //   console.log("Data Successfully Generated.");
+    // });
+    return "Data Successfully Generated. " + path;
   } catch (error) {
     console.log(error);
     return error;
