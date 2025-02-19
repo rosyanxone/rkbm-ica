@@ -21,7 +21,7 @@ app.post("/extract", (req, res) => {
   const rkbms = [];
   const rkbmPdf = req.files.pdfFile;
 
-  return "My path: " + path;
+  console.log(rkbmPdf.length);
 
   for (let i = 0; i < rkbmPdf.length; i++) {
     pdfParse(rkbmPdf[i])
@@ -35,64 +35,67 @@ app.post("/extract", (req, res) => {
   // Generating Excel
   setTimeout(() => {
     rkbms.sort((a, b) => a.no - b.no);
-    
-    const result = generateExcel(rkbms);
-    return result;
+    try {
+      generateExcel(rkbms);
+    } catch (e) {
+      return e;
+    }
   }, 1000);
 });
 
 // Listen
 const port = process.env.PORT || 3000;
-const path =  process.env.PATH || "./output";
 app.listen(port);
 console.log("Listening on port: " + port);
 
 function generateExcel(datas) {
-  // const workbook = new excelJS.Workbook();
-  // const worksheet = workbook.addWorksheet("RKBM");
+  const workbook = new excelJS.Workbook();
+  const worksheet = workbook.addWorksheet("RKBM");
+  const path = "./output";
 
-  // worksheet.columns = [
-  //   { header: "Nomor", key: "no", width: 10 },
-  //   { header: "Nama Kapal", key: "ship", width: 25 },
-  //   { header: "Agen Kapal", key: "agent", width: 45 },
-  //   { header: "Muatan", key: "ammount", width: 10 },
-  // ];
+  worksheet.columns = [
+    { header: "Nomor", key: "no", width: 10 },
+    { header: "Nama Kapal", key: "ship", width: 25 },
+    { header: "Agen Kapal", key: "agent", width: 45 },
+    { header: "Muatan", key: "ammount", width: 10 },
+    { header: "Tanggal", key: "date", width: 10 },
+  ];
 
-  // let counter = 1;
-  // datas.forEach((data) => {
-  //   worksheet.addRow(data);
-  //   counter++;
-  // });
+  let counter = 1;
+  datas.forEach((data) => {
+    worksheet.addRow(data);
+    counter++;
+  });
 
-  // let list = ["A", "B", "C", "D"];
-  // for (let i = 0; i <= counter; i++) {
-  //   list.forEach((item) => {
-  //     worksheet.getCell(item + i).border = {
-  //       top: { style: "thin" },
-  //       left: { style: "thin" },
-  //       bottom: { style: "thin" },
-  //       right: { style: "thin" },
-  //     };
-  //   });
-  // }
+  let list = ["A", "B", "C", "D", "E"];
+  for (let i = 0; i <= counter; i++) {
+    list.forEach((item) => {
+      worksheet.getCell(item + i).border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+    });
+  }
 
-  // worksheet.getRow(1).eachCell((cell) => {
-  //   cell.font = { bold: true };
-  // });
+  worksheet.getRow(1).eachCell((cell) => {
+    cell.font = { bold: true };
+  });
 
   try {
-    // workbook.xlsx.writeFile(`${path}/rkbm.xlsx`).then(function () {
-    //   console.log("Data Successfully Generated.");
-    // });
-    return "Data Successfully Generated. " + path;
+    workbook.xlsx.writeFile(`${path}/rkbm.xlsx`).then(function () {
+      console.log("Data Successfully Generated.");
+    });
   } catch (error) {
     console.log(error);
-    return error;
   }
 }
 
 function generateRkbm(result) {
   const pdfSplit = result.text.split(" ");
+
+  console.log(result);
 
   // Kapal RKBM
   const point1 = [];
@@ -171,10 +174,34 @@ function generateRkbm(result) {
   // MUATAN RESULT
   const muatanRKBM = parseInt(point5.join(" ").replace(",", ""));
 
+  // Tanggal RKBM
+  const point6 = [];
+
+  const point6From = pdfSplit.indexOf(
+    pdfSplit.filter((str) => str.includes("KEPELABUHANAN\n"))[0]
+  );
+  const point6To = pdfSplit.indexOf(
+    pdfSplit.filter((str) => str.includes("Muat\n"))[0]
+  );
+
+  for (let n = point6From; n <= point6To - 2; n++) {
+    point6.push(pdfSplit[n]);
+  }
+
+  // TANGGAL RESULT
+  const tglRKBM = point6
+    .join(" ")
+    .replace("KEPELABUHANAN\nSAMARINDA\n", "")
+    .replace("\nPerusahaan", "");
+
+  console.log(point6);
+  console.log(tglRKBM);
+
   return {
     no: nomorRKBM,
     ship: kapalRKBM,
     agent: agenRKBM,
     ammount: muatanRKBM,
+    date: tglRKBM,
   };
 }
