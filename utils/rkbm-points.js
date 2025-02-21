@@ -1,8 +1,11 @@
-const formatDate = require("./index");
+const { formatDate } = require("./index");
 
-function getPoints(result) {
-  const pdfSplit = result.text.split(" ");
-  // console.log(result);
+function getPoints(parsedPdf, rkbmPdf) {
+  const pdfSplit = parsedPdf.text.split(" ");
+  // console.log(parsedPdf);
+
+  // Rencana RKBM
+  const planRKBM = rkbmPdf.name.split(" ")[0] == "RKBM-B" ? "Bongkar" : "Muat";
 
   // Tanggal RKBM
   const tglRKBM = rkbmDate(pdfSplit);
@@ -11,50 +14,86 @@ function getPoints(result) {
   const kapalRKBM = rkbmShip(pdfSplit);
 
   // Nomor RKBM
-  const nomorRKBM = parseInt(pdfSplit[0].split(".")[3]);
+  const nomorRKBM = pdfSplit[0]
+    .split(" ")[0]
+    .split("Kepada\n")[0]
+    .split("Nomor:")[1];
 
   // Agen Kapal RKBM
   const agentRKBM = rkbmAgent(pdfSplit);
 
   // Muatan RKBM
-  const muatanRKBM = rkbmLoads(pdfSplit);
+  const { loadBongkar, loadMuat } = rkbmLoads(pdfSplit, planRKBM);
 
   // Barang RKBM
-  const barangRKBM = rkbmItem(pdfSplit);
+  const { itemBongkar, itemMuat } = rkbmItem(pdfSplit, planRKBM);
+
+  // Klasifikasi RKBM
+  const classificationRKBM = rkbmClassification(pdfSplit);
 
   return {
     date: tglRKBM,
     no: nomorRKBM,
     ship: kapalRKBM,
     agent: agentRKBM,
-    load: muatanRKBM,
-    item: barangRKBM,
+    amountBongkar: loadBongkar,
+    amountMuat: loadMuat,
+    itemBongkar,
+    itemMuat,
+    classification: classificationRKBM,
   };
 }
 
-function rkbmItem(pdfSplit) {
+function rkbmClassification(pdfSplit) {
+  const point8 = pdfSplit.indexOf(
+    pdfSplit.filter((str) => str.includes("Curah"))[0]
+  );
+  const result = pdfSplit[point8 + 1].includes("Kering")
+    ? "Curah Kering"
+    : "Curah Cair";
+
+  return result;
+}
+
+function rkbmItem(pdfSplit, planRKBM) {
   const point7From = pdfSplit.indexOf(
     pdfSplit.filter((str) => str.includes("KeringBATU"))[0]
   );
 
-  if (point7From != -1) {
-    if (
-      pdfSplit[point7From].includes("BATUBARA") ||
-      pdfSplit[point7From + 1].includes("BARA")
-    ) {
-      return "BATU BARA";
-    } else if (pdfSplit[point7From + 1].includes("PONDASI")) {
-      return "BATU PONDASI";
-    }
-  } else {
-    const point7FromAlt = pdfSplit.indexOf(
-      pdfSplit.filter((str) => str.includes("CairCPKO"))[0]
-    );
+  const result = () => {
+    if (point7From != -1) {
+      if (
+        pdfSplit[point7From].includes("BATUBARA") ||
+        pdfSplit[point7From + 1].includes("BARA")
+      ) {
+        return "BATU BARA";
+      } else if (pdfSplit[point7From + 1].includes("PONDASI")) {
+        return "BATU PONDASI";
+      }
+    } else {
+      const point7FromAlt = pdfSplit.indexOf(
+        pdfSplit.filter((str) => str.includes("CairCPKO"))[0]
+      );
 
-    if (pdfSplit[point7FromAlt].includes("CPKO")) {
-      return "CPKO";
+      if (pdfSplit[point7FromAlt].includes("CPKO")) {
+        return "CPKO";
+      }
     }
+  };
+
+  let itemBongkar = null;
+  let itemMuat = null;
+
+  switch (planRKBM) {
+    case "Bongkar":
+      itemBongkar = result();
+      break;
+    case "Muat":
+      itemMuat = result();
+      break;
   }
+
+  return { itemBongkar, itemMuat };
 }
 
 function rkbmDate(pdfSplit) {
@@ -121,8 +160,7 @@ function rkbmAgent(pdfSplit) {
   return point4.join(" ").replace("Laut/Agen:", "").replace("\n5.Tiba", "");
 }
 
-function rkbmLoads(pdfSplit) {
-  //   console.dir(pdfSplit, { maxArrayLength: null });
+function rkbmLoads(pdfSplit, planRKBM) {
   const point5 = [];
 
   let point5From = pdfSplit.indexOf(
@@ -153,18 +191,34 @@ function rkbmLoads(pdfSplit) {
     }
   }
 
+  let muatanRKBM = null;
+
   if (point5[0] === "1") {
     point5From = pdfSplit.indexOf(
       pdfSplit.filter((str) => str.includes("10.Rencana"))[0]
     );
 
     const matches = pdfSplit[point5From].replace(/,/g, "").match(/\d+/);
-    
-    return matches ? parseInt(matches[0]) : "";
+
+    muatanRKBM = matches ? parseInt(matches[0]) : "";
+  } else {
+    muatanRKBM = parseInt(point5.join(" ").replace(",", ""));
+  }
+
+  let loadBongkar = null;
+  let loadMuat = null;
+
+  switch (planRKBM) {
+    case "Bongkar":
+      loadBongkar = muatanRKBM;
+      break;
+    case "Muat":
+      loadMuat = muatanRKBM;
+      break;
   }
 
   // MUATAN RESULT
-  return parseInt(point5.join(" ").replace(",", ""));
+  return { loadBongkar, loadMuat };
 }
 
 module.exports = getPoints;

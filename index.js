@@ -4,6 +4,7 @@ const pdfParse = require("pdf-parse");
 
 const exportExcel = require("./utils/generate-excels");
 const getPoints = require("./utils/rkbm-points");
+const { sortRKBM } = require("./utils");
 
 const app = express();
 
@@ -26,7 +27,7 @@ app.post("/extract", (req, res) => {
   // Collects RKBM
   for (let i = 0; i < rkbmPdf.length; i++) {
     pdfParse(rkbmPdf[i])
-      .then((parsedPdf) => getPoints(parsedPdf))
+      .then((parsedPdf) => getPoints(parsedPdf, rkbmPdf[i]))
       .then((rkbmResult) => {
         // console.log("RKBM Data: " + JSON.stringify(rkbmResult));
         rkbms.push(rkbmResult);
@@ -35,18 +36,10 @@ app.post("/extract", (req, res) => {
 
   // Generating Excel
   setTimeout(() => {
-    rkbms.sort((a, b) => {
-      const [dayA, monthA, yearA] = a.date.split("-");
-      const [dayB, monthB, yearB] = b.date.split("-");
+    const sortedRKBM = sortRKBM(rkbms);
 
-      // Create Date objects for comparison
-      const dateA = new Date(`${monthA} ${dayA} 20${yearA}`);
-      const dateB = new Date(`${monthB} ${dayB} 20${yearB}`);
-
-      return dateA - dateB;
-    });
     try {
-      exportExcel(rkbms);
+      exportExcel(sortedRKBM);
     } catch (e) {
       return e;
     }
@@ -54,5 +47,5 @@ app.post("/extract", (req, res) => {
 });
 
 // Listen
-app.listen(3000);
-console.log("Listening on port: http://localhost:3000");
+app.listen(5000);
+console.log("Listening on port: http://localhost:5000");

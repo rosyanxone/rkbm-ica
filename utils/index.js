@@ -32,4 +32,17 @@ function formatDate(dateStr) {
   return `${formattedDay}-${formattedMonth}-${formattedYear}`;
 }
 
-module.exports = formatDate;
+function sortRKBM(rkbms) {
+  return rkbms.sort((a, b) => {
+    const [dayA, monthA, yearA] = a.date.split("-");
+    const [dayB, monthB, yearB] = b.date.split("-");
+
+    // Create Date objects for comparison
+    const dateA = new Date(`${monthA} ${dayA} 20${yearA}`);
+    const dateB = new Date(`${monthB} ${dayB} 20${yearB}`);
+
+    return dateA - dateB;
+  });
+}
+
+module.exports = { formatDate, sortRKBM };
