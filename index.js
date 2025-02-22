@@ -1,6 +1,7 @@
 const express = require("express");
 const fileUpload = require("express-fileupload");
 const pdfParse = require("pdf-parse");
+const { exec } = require("child_process");
 
 const exportExcel = require("./utils/generate-excels");
 const getPoints = require("./utils/rkbm-points");
@@ -29,7 +30,7 @@ app.post("/extract", (req, res) => {
     pdfParse(rkbmPdf[i])
       .then((parsedPdf) => getPoints(parsedPdf, rkbmPdf[i]))
       .then((rkbmResult) => {
-        // console.log("RKBM Data: " + JSON.stringify(rkbmResult));
+        console.log("RKBM Data: " + JSON.stringify(rkbmResult));
         rkbms.push(rkbmResult);
       });
   }
@@ -49,3 +50,9 @@ app.post("/extract", (req, res) => {
 // Listen
 app.listen(5000);
 console.log("Listening on port: http://localhost:5000");
+
+exec("start http://localhost:5000", (err) => {
+  if (err) {
+      console.error('Failed to open browser:', err);
+  }
+});

@@ -6,6 +6,17 @@
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "bin": "index.js",
+  "pkg": {
+    "targets": [
+      "node16-win-x64"
+    ],
+    "outputPath": "dist",
+    "assets": [
+      "node_modules/pdf-parse/lib/pdf.js/**/*",
+      "node_modules/pdf-parse/lib/pdf-parse.js"
+    ]
+  },
   "author": "",
   "license": "ISC",
   "description": "",
