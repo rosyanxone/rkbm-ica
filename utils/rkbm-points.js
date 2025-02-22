@@ -26,7 +26,7 @@ function getPoints(parsedPdf, rkbmPdf) {
   const { loadBongkar, loadMuat } = rkbmLoads(pdfSplit, planRKBM);
 
   // Barang RKBM
-  const { itemBongkar, itemMuat } = rkbmItem(pdfSplit, planRKBM);
+  const { itemBongkar, itemMuat } = rkbmItem(pdfSplit, planRKBM, rkbmPdf.name);
 
   // Klasifikasi RKBM
   const classificationRKBM = rkbmClassification(pdfSplit);
@@ -55,7 +55,7 @@ function rkbmClassification(pdfSplit) {
   return result;
 }
 
-function rkbmItem(pdfSplit, planRKBM) {
+function rkbmItem(pdfSplit, planRKBM, pdfName) {
   const point7From = pdfSplit.indexOf(
     pdfSplit.filter((str) => str.includes("KeringBATU"))[0]
   );
@@ -72,11 +72,15 @@ function rkbmItem(pdfSplit, planRKBM) {
       }
     } else {
       const point7FromAlt = pdfSplit.indexOf(
-        pdfSplit.filter((str) => str.includes("CairCPKO"))[0]
+        pdfSplit.filter((str) => str.includes("Cair"))[0]
       );
 
       if (pdfSplit[point7FromAlt].includes("CPKO")) {
         return "CPKO";
+      } else if (pdfSplit[point7FromAlt].includes("CPO")) {
+        return "CPO";
+      } else if (pdfSplit[point7FromAlt].includes("CRUDE")) {
+        return "CRUDE PALM KERNEL OIL";
       }
     }
   };
@@ -201,6 +205,8 @@ function rkbmLoads(pdfSplit, planRKBM) {
     const matches = pdfSplit[point5From].replace(/,/g, "").match(/\d+/);
 
     muatanRKBM = matches ? parseInt(matches[0]) : "";
+  } else if (point5[0].includes("Jumlah")) {
+    muatanRKBM = parseInt(point5[1].replace(",", ""));
   } else {
     muatanRKBM = parseInt(point5.join(" ").replace(",", ""));
   }

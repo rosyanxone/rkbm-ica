@@ -8,6 +8,7 @@ const getPoints = require("./utils/rkbm-points");
 const { sortRKBM } = require("./utils");
 
 const app = express();
+const port = 5000;
 
 app.use("/", express.static("public"));
 app.use(fileUpload());
@@ -38,9 +39,12 @@ app.post("/extract", (req, res) => {
   // Generating Excel
   setTimeout(() => {
     const sortedRKBM = sortRKBM(rkbms);
-
     try {
       exportExcel(sortedRKBM);
+      res.json({
+        success: true,
+        message: "Data received",
+      });
     } catch (e) {
       return e;
     }
@@ -48,11 +52,11 @@ app.post("/extract", (req, res) => {
 });
 
 // Listen
-app.listen(5000);
-console.log("Listening on port: http://localhost:5000");
+app.listen(port);
+console.log(`Listening on port: http://localhost:${port}`);
 
-exec("start http://localhost:5000", (err) => {
+exec(`start http://localhost:${port}`, (err) => {
   if (err) {
-      console.error('Failed to open browser:', err);
+    console.error("Failed to open browser:", err);
   }
 });

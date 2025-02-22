@@ -11,7 +11,6 @@
     "targets": [
       "node16-win-x64"
     ],
-    "outputPath": "dist",
     "assets": [
       "node_modules/pdf-parse/lib/pdf.js/**/*",
       "node_modules/pdf-parse/lib/pdf-parse.js"
